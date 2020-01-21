@@ -1,0 +1,7 @@
+In 2D plot, the variable is on x-axis. 
+Ex) S21 vs freq vs Power, x-axis = power, y-axis = freq
+    S21 vs freq vs flux,  x-axis = flux, y-axis = freq
+    S21 vs spec freq vs flux, x-axis = flux, y-axis = spec. freq. 
+
+In 2D datafile, frequency scan becomes a column.
+ 

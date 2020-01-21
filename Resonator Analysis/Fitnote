@@ -1,0 +1,14 @@
+1. Four parameter fit.
+Assumption: |S21| vs freq is well normalized: the background should be subtracted so that s21 makes a circle.
+We need four parameters: QL/Qc, phi0, f0, BW to fit |s21| vs freq. No need for phase.
+
+2. most accurate fit : geometric fit?
+a) Adjust scaling factor A=a*exp(1j*2pi*f*tau) such a way that s21 and inverse s21 make a nice circle, pass through (1,0) and are tangent to each circle.
+b) do geometric fit to the inverse s21 circle to find 1) center of the circle, C 2) diameter of the circle, D
+c) From C_x, C_y, D, calculate QL, Qc and phi0. 
+
+3. overcouple resonator (Qi >> Qc).
+a) Qi can be found by f0/del f, where f0 and delf are found from the geometric fit: f0 is the opposite corner of (1,0) with respect to the center of the circle. del f is obtained by looking for two points which are 90 degree away from the f0.
+b) From D=Qi/Qc, Qc=Qi/D
+
+However, this method is valid only when phi0~0.....
