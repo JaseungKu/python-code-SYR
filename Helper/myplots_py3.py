@@ -185,9 +185,9 @@ class plotDAQ(object):
         self.axes2.ticklabel_format(useOffset=False)                      
         self.axes3.ticklabel_format(useOffset=False)                      
         
-#        self.textvar = plt.figtext(0.75, 0.92,'freq=')
+        self.text_res = self.axes3.text(0.05,0.95,'')
             
-    def update(self, xdata1, ydata1, ydata2, ydata3):
+    def update(self, xdata1, ydata1, ydata2, ydata3, fit_res):
         self.lines1.set_xdata(xdata1)
         self.lines1.set_ydata(ydata1)
         self.lines2.set_xdata(xdata1)
@@ -208,4 +208,5 @@ class plotDAQ(object):
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
       #  plt.pause(0.001)
+        self.text_res.set_text(f'Fit Res.={fit_res:.3e}' + '$\,\Omega$')
         
