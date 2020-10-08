@@ -67,7 +67,7 @@ class KeysightP9372A:
             self.write("CALCulate:PARameter:DEFine:EXT '{}',{}".format(name, meas))
             self.write("DISPlay:WINDow1:TRACe1:FEED '{}'".format(name))
             self.measurements.append(name)
-            print("Initialized {} Measurement '{}'".format(meas, name))
+            # print("Initialized {} Measurement '{}'".format(meas, name))
             return name
         else:
             print("Measurement must be S11, S12, S21, or S22")
