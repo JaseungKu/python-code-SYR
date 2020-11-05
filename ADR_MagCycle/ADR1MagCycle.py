@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO) # set logging level to be INFO.
 
 class Plotter(object):
     """
-    Create a plot objecto to plot various parameters vs time during a mag cycle
+    Create a plot objec to plot various parameters vs time during a mag cycle
     """
 
     def __init__(self, title='title'):
