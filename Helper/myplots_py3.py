@@ -157,56 +157,123 @@ class plotDAQ(object):
     """
     Description:
     """
-    def __init__(self, xlabel1='xlabel1()', ylabel1='ylabel1()', xlabel2='xlabel2()',ylabel2='ylabel2()', 
-                 xlabel3='xlabel3()',ylabel3='ylabel3()',title='title', figsize=(12,8)):
+    def __init__(self, xlabel1='xlabel1()'
+                 , ylabel1='ylabel1()'
+                 , xlabel2='xlabel2()'
+                 , ylabel2='ylabel2()'
+                 , xlabel3='xlabel3()'
+                 , ylabel3='ylabel3()'
+                 , title='title'
+                 , figsize=(12,8)):
         
         self.fig = plt.figure(figsize = figsize)
-        self.axes1 = plt.subplot2grid((6,1), (0,0), colspan=1)
-        self.axes2 = plt.subplot2grid((6,1), (1,0), colspan=1)
-        self.axes3 = plt.subplot2grid((6,1), (2,0), rowspan=4)
+        grid = plt.GridSpec(6,1,wspace=0.4, hspace=0.5)
+        self.fig.suptitle(title)
+        
+        self.axes1 = self.fig.add_subplot(grid[0,0])
+        self.axes2 = self.fig.add_subplot(grid[1,0])
+        self.axes3 = self.fig.add_subplot(grid[2:6,0])
+            
+#         locs = ['left','right','bottom','top']
+#         spine_thickness = 1.5
+#         for l in locs:
+#             self.axes1.spines[l].set_linewidth(spine_thickness)
+#             self.axes2.spines[l].set_linewidth(spine_thickness)
+#             self.axes3.spines[l].set_linewidth(spine_thickness)
+                                                      
+#         self.axes1 = plt.subplot2grid((6,1), (0,0), colspan=1)
+#         self.axes2 = plt.subplot2grid((6,1), (1,0), colspan=1)
+#         self.axes3 = plt.subplot2grid((6,1), (2,0), rowspan=4)
 
         self.axes1.grid(which='both', linestyle='--')
         self.axes2.grid(which='both', linestyle='--')
         self.axes3.grid(which='both', linestyle='--')
-                
-        self.lines1, = self.axes1.plot([], [], 'k-') 
-        self.lines2, = self.axes2.plot([], [], 'k-') 
-        self.lines3, = self.axes3.plot([], [], 'k-')
-        self.lines4, = self.axes3.plot([], [], 'b-')
-                              
-        self.axes1.set_xlabel(xlabel1)
-        self.axes1.set_ylabel(ylabel1)
-        self.axes2.set_xlabel(xlabel2)
-        self.axes2.set_ylabel(ylabel2)
-        self.axes3.set_xlabel(xlabel3)
-        self.axes3.set_ylabel(ylabel3)
+                                      
+        label_fontsize = 14
+        self.axes1.set_xlabel(xlabel1, fontsize=label_fontsize)
+        self.axes1.set_ylabel(ylabel1, fontsize=label_fontsize)
+        self.axes2.set_xlabel(xlabel2, fontsize=label_fontsize)
+        self.axes2.set_ylabel(ylabel2, fontsize=label_fontsize)
+        self.axes3.set_xlabel(xlabel3, fontsize=label_fontsize)
+        self.axes3.set_ylabel(ylabel3, fontsize=label_fontsize)
         
         self.axes1.ticklabel_format(useOffset=False)                      
         self.axes2.ticklabel_format(useOffset=False)                      
         self.axes3.ticklabel_format(useOffset=False)                      
         
-        self.text_res = self.axes3.text(0.05,0.95,'')
-            
-    def update(self, xdata1, ydata1, ydata2, ydata3, fit_res):
-        self.lines1.set_xdata(xdata1)
+        self.lines1, = self.axes1.plot([], [], 'b-') 
+        self.lines2, = self.axes2.plot([], [], 'b-') 
+        self.lines3, = self.axes3.plot([], [], 'ro', fillstyle='none')
+        self.lines4, = self.axes3.plot([], [], 'k-')
+                
+        self.axes3.tick_params(axis='x', labelsize=12)
+        self.axes3.tick_params(axis='y', labelsize=12)
+        
+        self.axes1.axhline(color='k', linestyle='--')
+        self.axes2.axhline(color='k', linestyle='--')
+        self.axes3.axhline(color='k', linestyle='--')
+        self.axes3.axvline(color='k', linestyle='--')   
+               
+    def update(self, timedata, ydata1, ydata2, I_avg, V_avg, V_fit, fit_res):
+        self.lines1.set_xdata(timedata)
         self.lines1.set_ydata(ydata1)
-        self.lines2.set_xdata(xdata1)
+        self.lines2.set_xdata(timedata)
         self.lines2.set_ydata(ydata2)
-        self.lines3.set_xdata(ydata1)
-        self.lines3.set_ydata(ydata2)
-        self.lines4.set_xdata(ydata1)
-        self.lines4.set_ydata(ydata3)
-#        plt.gcf().texts.remove(self.textvar) # This and next line make code slow.
-#        self.textvar = plt.figtext(0.75, 0.92,'freq='+str(x[-1]))
+        
+        self.lines3.set_xdata(I_avg)
+        self.lines3.set_ydata(V_avg)
+        self.lines4.set_xdata(I_avg)
+        self.lines4.set_ydata(V_fit)
+
         self.axes1.relim()
         self.axes1.autoscale()
         self.axes2.relim()
         self.axes2.autoscale()
         self.axes3.relim()
         self.axes3.autoscale()
-        #plt.draw()
+        
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-      #  plt.pause(0.001)
-        self.text_res.set_text(f'Fit Res.={fit_res:.3e}' + '$\,\Omega$')
+        
+        self.axes3.legend(("Data", f'Linear Fit\nR={fit_res:.1f} Ω'), loc=0, fontsize=16, frameon=False)
+        
+class plotVI(object):
+    """
+    Description: plot VI
+    """
+    def __init__(self
+                 , xlabel1='xlabel()'
+                 , ylabel1='ylabel()'
+                 , title='title'
+                 , figsize=(10,8)):
+        
+        self.fig = plt.figure(figsize = figsize)
+        self.fig.suptitle(title)
+            
+        self.axes1 = self.fig.add_subplot()
+            
+        self.axes1.grid(which='both', linestyle='--')
+                                      
+        label_fontsize = 14
+        self.axes1.set_xlabel(xlabel1, fontsize=label_fontsize)
+        self.axes1.set_ylabel(ylabel1, fontsize=label_fontsize)
+        self.axes1.ticklabel_format(useOffset=False)                      
+                       
+        self.axes1.tick_params(axis='x', labelsize=14)
+        self.axes1.tick_params(axis='y', labelsize=14)
+               
+        self.axes1.axhline(color='k', linestyle='--')
+        self.axes1.axvline(color='k', linestyle='--')
+        
+        self.lines1, = self.axes1.plot([], [], 'bo-') 
+        
+    def update(self, I, V):
+        self.lines1.set_xdata(I)
+        self.lines1.set_ydata(V)
+        
+        self.axes1.relim()
+        self.axes1.autoscale()
+               
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
         
