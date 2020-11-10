@@ -262,8 +262,8 @@ class plotVI(object):
         self.axes1.tick_params(axis='x', labelsize=14)
         self.axes1.tick_params(axis='y', labelsize=14)
                
-        self.axes1.axhline(color='k', linestyle='--')
-        self.axes1.axvline(color='k', linestyle='--')
+        self.axes1.axhline(color='k', linestyle='-')
+        self.axes1.axvline(color='k', linestyle='-')
         
         self.lines1, = self.axes1.plot([], [], 'bo-') 
         
