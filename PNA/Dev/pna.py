@@ -158,7 +158,7 @@ for pwr, IF in zip(powers, IFBandwiths):
     # plot update
     # extent = [params.power_start, pwr, params.freq_start, params.freq_end]
     # plotobj.update(data, extent)
-    quad_plotter.update(x=powers, y=freq
+    quad_plotter.update(x_axis=powers, y_axis=freq
                         , amp=np.abs(data), phase=np.angle(data, deg=True), real=data.real, imag=data.imag)
 
     # save data in each iteration
@@ -169,8 +169,8 @@ for pwr, IF in zip(powers, IFBandwiths):
 if params.flux is not None:
         params.flux.setVolage(parama.flux.flux_final)
 
-# plotobj = plot_data(quad_plotter, plot_type='amp')
+plotobj = plot_data(quad_plotter, plot_type='amp')
 fig_full_file_path = params.full_file_path.replace('dat','png')
-quad_plotter.fig.savefig(fig_full_file_path)
+plotobj.fig.savefig(fig_full_file_path)
 log.info('Measurement complete!!!')
 
