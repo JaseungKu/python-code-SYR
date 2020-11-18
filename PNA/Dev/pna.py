@@ -70,18 +70,6 @@ def find_res_freq(freqs, S21):
     '''
     pass
 
-def plot_data(quad_plotter, plot_type):
-    fig, ax = plt.subplots(1,1)
-    if plot_type = 'amp':
-        ax = copy.deepcopy(quad_plotter.axes_amp)
-    elif plot_type = 'phase':
-        ax = copy.deepcopy(quad_plotter.axes_phase)
-    elif plot_type = 'real':
-        ax = copy.deepcopy(quad_plotter.axes_real)
-    elif plot_type = 'imag':
-        ax = copy.deepcopy(quad_plotter.axes_imag)
-        
-
 ############################ Set parameters ################################################
 PNA_GPIB = 2
 SIM_GPIB = 5
@@ -169,8 +157,7 @@ for pwr, IF in zip(powers, IFBandwiths):
 if params.flux is not None:
         params.flux.setVolage(parama.flux.flux_final)
 
-plotobj = plot_data(quad_plotter, plot_type='amp')
 fig_full_file_path = params.full_file_path.replace('dat','png')
-plotobj.fig.savefig(fig_full_file_path)
+quad_plotter.fig.savefig(fig_full_file_path)
 log.info('Measurement complete!!!')
 
