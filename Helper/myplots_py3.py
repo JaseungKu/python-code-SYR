@@ -209,10 +209,10 @@ class plotDAQ(object):
         self.axes3.tick_params(axis='x', labelsize=12)
         self.axes3.tick_params(axis='y', labelsize=12)
         
-        self.axes1.axhline(color='k', linestyle='--')
-        self.axes2.axhline(color='k', linestyle='--')
-        self.axes3.axhline(color='k', linestyle='--')
-        self.axes3.axvline(color='k', linestyle='--')   
+#         self.axes1.axhline(color='k', linestyle='--')
+#         self.axes2.axhline(color='k', linestyle='--')
+#         self.axes3.axhline(color='k', linestyle='--')
+#         self.axes3.axvline(color='k', linestyle='--')   
                
     def update(self, timedata, ydata1, ydata2, I_avg, V_avg, V_fit, fit_res):
         self.lines1.set_xdata(timedata)
