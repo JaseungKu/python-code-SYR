@@ -31,11 +31,23 @@ params.device_ID = 'WisCST'  # Folder with sample_ID is created under save_path
 
 # end of common block
 
+pna = Instrument(instr, measType='S21', sweeptype='linear',avg=1, IF=50, num_points=101)
+flux01 = InstrumentParams(instr, setVoltage=0)
+spec = InstrumentParams(instr, power=-20)
+exp.add_instrument([pna, flux01, spec])
+
+sweep1 = Sweep(flux1, start=-10, end=0.2, step=0.1, order=1)
+sweep2 = SweepParams(flux2, start=-2, end =0.2, step=0.2, order=2)
+sweep1 = SweepParams(pna, start=5e9, end=6e9, num_points=101, order=1)
+sweep3 = SweepParams(pna, start=-20, end=0, step=1, order=2)
+sweep4 = SweepParams(pna, start=100, end=5000, num_points=101, order=2
+exp.add_sweep([sweep1, sweep2])
+
 
 # cav, 1D
 
 # instruments to use
-params.instrument_list = [params.pna, params.flux1]
+# params.instrument_list = [params.pna, params.flux1]
 
 # pna setting
 params.pna.mode = 'linear'  # 'linear' or 'CW'

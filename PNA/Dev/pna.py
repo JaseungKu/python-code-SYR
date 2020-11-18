@@ -1,7 +1,5 @@
-%%time
 import logger as log
 from plotter import quad_plot # singleton
-import copy
 import json
 
 def create_log_file(params):
@@ -99,8 +97,6 @@ params.base_path = ''
 params.sample_ID = 'WiscCST'
 params.exp_name = 'Cav_vs_P_2D'
 
-# plot
-params.plot_type = 'amp' # 'amp', 'phase', 'real', 'imag'
 ###########################################################3#################################
 
 create_log_file(params)
@@ -160,4 +156,5 @@ if params.flux is not None:
 fig_full_file_path = params.full_file_path.replace('dat','png')
 quad_plotter.fig.savefig(fig_full_file_path)
 log.info('Measurement complete!!!')
+
 

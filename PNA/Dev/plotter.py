@@ -103,4 +103,9 @@ class QuadPlotter:
             self.fig.canvas.draw() 
             self.fig.canvas.flush_events()
     
+class SinglePlotter:
+    def __init__(self, plot_dim=1, xlabel='xlabel()', ylabel=None):
+        self.fig, self.axes = plt.subplots(1,1)
+        
+    
 quad_plotter = QuadPlotter()

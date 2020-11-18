@@ -168,14 +168,26 @@ class InstrumentParams(object):
     instr: instrument driver object
     setter_value : a dictionary of set method and value
     """
-    def __init__(self, instr, settter_value ):
+    def __init__(self, instr, setter_value ):
         self.instr = instr
         self.setter_value = setter_value
 
-# class SweepParams(object)
-#     def __init__(self, instr_obj, start, end, step, num_points, order):
+class SweepParams:
+    def __init__(self, instr_obj, start=None, end=None, step=None, num_points=None, order=1):
+        self.instr_obj = instr_obj
+        self.start = start
+        self.end = end
+        self.step = step
+        self.num_points = num_points
+        self.order = order
 
 
+class ExpManager:
+    def add_sweep(self, sweep_list):
+        for sweep in sweep_list:
+            self.sweep.append(sweep)
+    def run(self):
+        
 def initialize_instrument(params):
     for p in params:
         if isinstance(p, InstrumentParams):
