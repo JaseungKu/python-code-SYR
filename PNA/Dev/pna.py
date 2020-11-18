@@ -1,3 +1,4 @@
+
 import logger as log
 from plotter import quad_plot # singleton
 import json
@@ -156,5 +157,3 @@ if params.flux is not None:
 fig_full_file_path = params.full_file_path.replace('dat','png')
 quad_plotter.fig.savefig(fig_full_file_path)
 log.info('Measurement complete!!!')
-
-
