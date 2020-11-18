@@ -24,7 +24,8 @@ class QuadPlotter:
         self.axes_imag = self.fig.add_subplot(grid[1,1])
       
     
-    def initialize(self, plot_dim=1, xlabel='xlabel()', ylabel=None):
+    def initialize(self, plot_dim=1, xlabel='xlabel()', ylabel=None, title='title'):
+        self.fig.suptitle(title)
         self.plot_dim = plot_dim
         label_fontsize = 14
         tick_label_fontsize = 12
@@ -103,4 +104,4 @@ class QuadPlotter:
             self.fig.canvas.draw() 
             self.fig.canvas.flush_events()
     
-quad_plotter = QuadPlotter()
+# quad_plotter = QuadPlotter()
