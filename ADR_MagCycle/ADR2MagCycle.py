@@ -159,8 +159,15 @@ class MagCycle(object):
     def _read_latest_inductive_volt(self):
         log_filename = self._find_log_file()
         with h5py.File(log_filename, 'r') as f:
-            return np.abs(f['Data'][-1][5])    # f['Data'] is an array with 6 elements. 6th element is inductive voltage.
-
+                
+#             for i,v in enumerate(f['Log list']):
+#                 if v[0]=='Induct. Volt':
+#                     induct_volt_index = i
+#                 break
+            
+#             return np.abs(f['Data'][-1, induct_volt_index+1]) # read most current inductive voltage from log file.
+            return np.abs(f['Data'][-1,5])
+                                    
     def _find_log_file(self):
 
         month_folder = datetime.date.strftime(datetime.date.today(), '%Y-%m')
