@@ -10,18 +10,6 @@ import visa
 import os
 import re
 
-def list_exp_type():
-    """ list all experiment types, i.e., function list """
-    pass
-
-def select_params_template(num):
-    params = Params()
-
-    return params
-
-def instrument_communication_check():
-    pass
-
 class PNA_Factory(AgilentN5230A.AgilentN5230A):
     '''
     This object peforms what we want PNA to do, including basic individual operations provided by instrument driver and
