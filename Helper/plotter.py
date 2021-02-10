@@ -1,22 +1,22 @@
 # plotter.py
+
 import matplotlib.pyplot as plt
 import numpy as np
 import nmmn.plots
 parula = nmmn.plots.parulacmap() 
 
-class QuadPlotter:
+class QuadPlotter(object):
     """
     Quad plot window to plot real, imag, amp, and phase of S21.
-    This is uses as a singleton.
     """
-    def __init__(self, title=None, figsize=(12,10)):
+    def __init__(self, figsize=(12,10)):
         """ Create a layout of plot.
             Don't know what goes into each axes yet.
         """
         
         self.fig = plt.figure(figsize = figsize)
         grid = plt.GridSpec(2,2,wspace=0.2, hspace=0.2)
-        self.fig.suptitle(title)
+#         self.fig.suptitle(title)
         
         self.axes_amp = self.fig.add_subplot(grid[0,0])
         self.axes_phase = self.fig.add_subplot(grid[0,1])
@@ -68,8 +68,9 @@ class QuadPlotter:
         Args:
             If plot_dim is 1, take keyword arguments of
             xdata, amp, phase, real and imag.
+            
             If plot_dim is 2, take keyword arguments of
-            x, y, amp, phase, real, imag, and extension.
+            x_axis, y_axis, amp, phase, real, imag.
         """
         if self.plot_dim==1:
             self.line_amp.set_xdata(kwargs['xdata'])
@@ -103,5 +104,46 @@ class QuadPlotter:
             
             self.fig.canvas.draw() 
             self.fig.canvas.flush_events()
+
+class IQPlotter(object):
+    """
+    Plot in IQ plane.
+    """
+    def __init__(self, figsize=(8,8), xlabel='I', ylabel='Q', title='IQ plot'):
+        """ Create a layout of plot.
+            Don't know what goes into each axes yet.
+        """
+        
+        self.fig, self.ax = plt.subplots(1, 1, figsize = figsize)
+#         self.fig.tight_layout()    
+        self.fig.suptitle(title)
     
+        label_fontsize = 14
+        tick_label_fontsize = 12
+        
+        self.ax.set_xlabel(xlabel, fontsize=label_fontsize)
+        self.ax.set_ylabel(ylabel, fontsize=label_fontsize)
+            
+        self.ax.tick_params(axis='x', labelsize=tick_label_fontsize)
+        self.ax.tick_params(axis='y', labelsize=tick_label_fontsize)
+        
+        self.line, = self.ax.plot([], [],'.')   
+        
+    def update(self, S21):
+        """
+        Args:
+            S21: numpy array of S21
+        
+        """
+        
+        self.line.set_xdata(np.real(S21))
+        self.line.set_ydata(np.imag(S21))
+                                  
+        self.ax.axis('equal')
+        self.ax.relim()        
+        self.ax.autoscale()
+        
+        self.fig.canvas.draw() 
+        self.fig.canvas.flush_events()  
+          
 # quad_plotter = QuadPlotter()
