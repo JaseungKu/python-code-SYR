@@ -212,7 +212,7 @@ class plotDAQ(object):
 #         self.axes1.axhline(color='k', linestyle='--')
 #         self.axes2.axhline(color='k', linestyle='--')
 #         self.axes3.axhline(color='k', linestyle='--')
-#         self.axes3.axvline(color='k', linestyle='--')   
+#         self.axes3.axvline(color='k', linestyle='--') plot_dim=1, xlabel='xlabel()', ylabel=None,  
                
     def update(self, timedata, ydata1, ydata2, I_avg, V_avg, V_fit, fit_res):
         self.lines1.set_xdata(timedata)
