@@ -28,9 +28,9 @@ class Plotter(object):
 
         self.fig, self.axs = plt.subplots(2 ,1, figsize=(10,8))
 
-        self.fig.suptitle(title)
+#         self.fig.suptitle(title)
         self.fig.autofmt_xdate()
-
+        self.axs[0].set_title(title)
         self.lines = [[]] * 3   # 3 line plots and 6 axes
 
         xlabel = 'Time'
@@ -333,7 +333,7 @@ class MagCycle(object):
         logging.info(f'Magdown ended @{datetime.datetime.now():%x, %X}! Yeah!')
 
     @classmethod
-    def schedule_mag_cycle(cls, start_mag_cycle_datetime, soak_hour=1):
+    def schedule_mag_cycle(cls, start_mag_cycle_datetime, soak_hour=1, **kwargs):
         """
         Run a mag cycle at the scheduled date/time.
         start_mag_cycle_datetime : datetime object
@@ -349,7 +349,7 @@ class MagCycle(object):
 
         while True:
             if datetime.datetime.now() >= start_mag_cycle_datetime:
-                cls.run_mag_cycle(soak_hour=soak_hour)
+                cls.run_mag_cycle(soak_hour=soak_hour, **kwargs)
                 break
             else:
                 time.sleep(60)

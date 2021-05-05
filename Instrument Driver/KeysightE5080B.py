@@ -48,7 +48,7 @@ class KeysightE5080B:
 #             print("Measurement must be S11, S12, S21, or S22")
          self.instr.write(f'CALCulate:MEASure1:PARameter {meas}')
 
-    def setSweepType(self, mode='linear'):
+    def setSweepType(self, mode):
         '''Set sweep mode : linear sweep, log sweep, CW sweep, etc 
            mode : LINear | LOGarithmic | POWer | CW | SEGMent | PHASe'''
         self.instr.write("SENSe1:SWEep:TYPE {}".format(mode))
@@ -100,6 +100,21 @@ class KeysightE5080B:
         '''Power for measurement
         '''
         self.instr.write("SOUR:POW {}".format(power))
+       
+    def setFreq(self, freq):
+        '''Frq for measurement
+        '''
+        self.instr.write("SOUR:FREQ {}".format(freq))
+        
+    def setStartPwr(self, pwr):
+        ''' Start Freq in Hz
+        '''
+        self.instr.write("SENSe1:POWer:STARt {}".format(pwr))
+        
+    def setStopPwr(self, pwr):
+        ''' Stop Freq in Hz
+        '''
+        self.instr.write("SENSe1:POWer:STOP {}".format(pwr))
         
     def numPoints(self, points):
         '''Number of points in measurement. 
@@ -123,6 +138,7 @@ class KeysightE5080B:
     def avgDone(self):
         '''Return true if averaging is complete, false if not.
         '''
+        self.instr.timeout = 10000
         return bool(float(self.instr.query('STAT:OPER:AVER1:COND?')) or 0)
         
     def sweepDone(self):

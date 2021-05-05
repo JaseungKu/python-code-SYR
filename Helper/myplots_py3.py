@@ -67,7 +67,7 @@ class plot2D:
     """
     Description:
     """
-    def __init__(self, xlabel='xlabel()', ylabel='ylabel()', title='title', figsize=(10,5)):
+    def __init__(self, xlabel='xlabel()', ylabel='ylabel()', title='title', figsize=(12,5)):
         self.fig, self.axes = plt.subplots(nrows=1, figsize=figsize)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -78,7 +78,7 @@ class plot2D:
         #plt.colorbar(self.axesimage)
         #self.textvar = plt.figtext(0.75, 0.92, 'variable=')
     
-    def update(self, array_2D, extent, cmap='Blues_r'):
+    def update(self, array_2D, extent, cmap='viridis'):
         self.axesimage = self.axes.matshow(array_2D, cmap=cmap, extent=extent, origin='lower', aspect='auto')
         self.axesimage.set_data(array_2D)
         self.axes.xaxis.set_ticks_position('bottom')  
@@ -153,7 +153,7 @@ class plot2D_4sub(object):
         self.fig.canvas.flush_events()
       #  plt.pause(0.001)   
 
-class plotDAQ(object):
+class PlotDAQ:
     """
     Description:
     """
@@ -167,29 +167,20 @@ class plotDAQ(object):
                  , figsize=(12,8)):
         
         self.fig = plt.figure(figsize = figsize)
-        grid = plt.GridSpec(6,1,wspace=0.4, hspace=0.5)
-        self.fig.suptitle(title)
+        grid = plt.GridSpec(6,1 ,wspace=0.7, hspace=0.5)
         
         self.axes1 = self.fig.add_subplot(grid[0,0])
         self.axes2 = self.fig.add_subplot(grid[1,0])
         self.axes3 = self.fig.add_subplot(grid[2:6,0])
-            
-#         locs = ['left','right','bottom','top']
-#         spine_thickness = 1.5
-#         for l in locs:
-#             self.axes1.spines[l].set_linewidth(spine_thickness)
-#             self.axes2.spines[l].set_linewidth(spine_thickness)
-#             self.axes3.spines[l].set_linewidth(spine_thickness)
-                                                      
-#         self.axes1 = plt.subplot2grid((6,1), (0,0), colspan=1)
-#         self.axes2 = plt.subplot2grid((6,1), (1,0), colspan=1)
-#         self.axes3 = plt.subplot2grid((6,1), (2,0), rowspan=4)
+        self.axes1.set_title(title)    
 
         self.axes1.grid(which='both', linestyle='--')
         self.axes2.grid(which='both', linestyle='--')
         self.axes3.grid(which='both', linestyle='--')
                                       
         label_fontsize = 14
+        ticklabel_fontsize = 12
+
         self.axes1.set_xlabel(xlabel1, fontsize=label_fontsize)
         self.axes1.set_ylabel(ylabel1, fontsize=label_fontsize)
         self.axes2.set_xlabel(xlabel2, fontsize=label_fontsize)
@@ -206,14 +197,9 @@ class plotDAQ(object):
         self.lines3, = self.axes3.plot([], [], 'ro', fillstyle='none')
         self.lines4, = self.axes3.plot([], [], 'k-')
                 
-        self.axes3.tick_params(axis='x', labelsize=12)
-        self.axes3.tick_params(axis='y', labelsize=12)
-        
-#         self.axes1.axhline(color='k', linestyle='--')
-#         self.axes2.axhline(color='k', linestyle='--')
-#         self.axes3.axhline(color='k', linestyle='--')
-#         self.axes3.axvline(color='k', linestyle='--')   
-               
+        self.axes3.tick_params(axis='x', labelsize=ticklabel_fontsize)
+        self.axes3.tick_params(axis='y', labelsize=ticklabel_fontsize)
+                       
     def update(self, timedata, ydata1, ydata2, I_avg, V_avg, V_fit, fit_res):
         self.lines1.set_xdata(timedata)
         self.lines1.set_ydata(ydata1)
@@ -237,7 +223,7 @@ class plotDAQ(object):
         
         self.axes3.legend(("Data", f'Linear Fit\nR={fit_res:.1f} Ω'), loc=0, fontsize=16, frameon=False)
         
-class plotVI(object):
+class PlotXY(object):
     """
     Description: plot VI
     """
@@ -248,22 +234,22 @@ class plotVI(object):
                  , figsize=(10,8)):
         
         self.fig = plt.figure(figsize = figsize)
-        self.fig.suptitle(title)
-            
+           
         self.axes1 = self.fig.add_subplot()
-            
+        self.axes1.set_title(title)    
         self.axes1.grid(which='both', linestyle='--')
                                       
         label_fontsize = 14
+        ticklabel_fontsize = 12
         self.axes1.set_xlabel(xlabel1, fontsize=label_fontsize)
         self.axes1.set_ylabel(ylabel1, fontsize=label_fontsize)
         self.axes1.ticklabel_format(useOffset=False)                      
                        
-        self.axes1.tick_params(axis='x', labelsize=14)
-        self.axes1.tick_params(axis='y', labelsize=14)
+        self.axes1.tick_params(axis='x', labelsize=ticklabel_fontsize)
+        self.axes1.tick_params(axis='y', labelsize=ticklabel_fontsize)
                
-        self.axes1.axhline(color='k', linestyle='-')
-        self.axes1.axvline(color='k', linestyle='-')
+#         self.axes1.axhline(color='k', linestyle='-')
+#         self.axes1.axvline(color='k', linestyle='-')
         
         self.lines1, = self.axes1.plot([], [], 'bo-') 
         
