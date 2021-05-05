@@ -155,7 +155,7 @@ class plot2D_4sub(object):
 
 class plotDAQ(object):
     """
-    Description:
+    This class plots two analog input voltages and VI.
     """
     def __init__(self, xlabel1='xlabel1()'
                  , ylabel1='ylabel1()'
