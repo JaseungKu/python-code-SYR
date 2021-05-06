@@ -1,9 +1,8 @@
 # Jaseung Ku
 # Aug 2020
 
-from math import pi
 from scipy.special import ellipk
-from scipy.constants import h, hbar, e, epsilon_0, mu_0
+from scipy.constants import h, hbar, e, epsilon_0, mu_0, c
 from scipy import optimize
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,24 +27,20 @@ class CPW(object):
     h : thickness of substrate in um
     t : thickness of metal in um
     epsilon_r: relative permeability of substrate
-    metal: type of metal. Need it for kinetic inductance calculation
-    kinetic_induct_include : True or False
-    
+        
     TODO
     ----
     lambda_L vs thickness for metal.
     
     """
     
-    def __init__(self, w=10, s=5, h=500, t=0.1, epsilon_r=11.6, metal='Nb', kinetic_induct_include=False):
+    def __init__(self, w=10, s=5, h=500, t=0.1, epsilon_r=11.6):
         self.w = w
         self.s = s
         self.h = h
         self.t = t
         self.epsilon_r = epsilon_r
-        self.metal = metal
-        self.kinetic_induct_include = kinetic_induct_include
-                    
+        
     @property
     def b(self):
         return self.w + 2 * self.s
@@ -57,48 +52,49 @@ class CPW(object):
         This depends on thickness and temperature, but we assume T=0 since operating temperature is much lower than Tc.
         """
         
-        return 0.08 # for 100nm Nb
-    
-    @property   
-    def epsilon_eff(self):
-        """
-        Effectvie permittivity. Unitless
-        Ref: Simmons' book (Schuster thesis)
-        """        
-        k = self.w / self.b
-        k3 = np.tanh(pi*self.w/4/self.h) / np.sqrt(pi*self.b/4/self.h)
-        k_p = sqrt(1 - k**2)
-        k3_p = sqrt(1 - k3**2)
-
-        K_tilda = ellipk(k_p) * ellipk(k3) / ellipk(k) / ellipk(k3_p)
-        epsilon_eff = (1 + self.epsilon_r * K_tilda) / (1 + K_tilda)
-        
-        return epsilon_eff
+        # return 0.08 # for 100nm Nb
+        return NotImplemented
     
     @property
-    def epsilon_eff_1(self):
+    def epsilon_eff(self):
         """
-        Effectvie permittivity. Unitless
-        Ref: Gopple paper
+        Effectvie permittivity for CPW with a single dielectric and no ground under the dielectric. Unitless
+        Ref: Gupta et al., Microwsrip lnes and slotlines, 2nd edition
+        Note that in scipy, the arguement to the complete elliptical integral of the first kind needs to be
+        the square of k1.  
+        In scipy, K(m) = \int_0^1 1 \frac{dt}{\sqrt( (1-t^2)(1-m*t^2))}, but in Gupta's book
+                , K(k) = \int_0^1 1 \frac{dt}{\sqrt( (1-t^2)(1-k^2*t^2))}.
         """
-        epsilon_r1 = 1
+               
+        k1 = self.w / self.b
+        k1_p = np.sqrt(1 - k1**2)
 
-        k0 = self.w / self.b
-        k0_p = sqrt(1 - k0**2)
+        k2 = np.sinh(np.pi*self.w/4/self.h) / np.sinh(np.pi*self.b/4/self.h)
+        k2_p = np.sqrt(1 - k2**2)
 
-        # k1 = np.sinh(pi*2/4/h1) / np.sinh(pi*b/4/h1)
-        k1=0
-        k1_p = sqrt(1 - k1**2)
-        k2 = np.sinh(pi*self.w/4/self.h) / np.sinh(pi*self.b/4/self.h)
-        k2_p = sqrt(1 - k2**2)
-
-        epsilon_eff_1 = (1 
-                    + (epsilon_r1 - 1)/2*ellipk(k1)*ellipk(k0_p)/ellipk(k1_p)/ellipk(k0) # This term is zero
-                    + (self.epsilon_r - epsilon_r1)/2*ellipk(k2)*ellipk(k0_p)/ellipk(k2_p)/ellipk(k0)
-                      )
+        epsilon_eff = 1 + (self.epsilon_r - 1)/2*ellipk(k2**2)*ellipk(k1_p**2)/ellipk(k2_p**2)/ellipk(k1**2) 
+                        
+        return epsilon_eff
+           
+    @property
+    def C_l(self):
+        """
+        Capacitance per unit length, F/m
+        Ref: Gupta, Microstrip lines and slotlines
+        Goppl paper uses the same expression, C_l = 4 * epsilon_0 * self.epsilon_eff * ellipk(k1**2)/ellipk(k1_p**2)
+        """
+        k1 = self.w / self.b
+        k1_p = np.sqrt(1 - k1**2)
+        k2 = np.sinh(np.pi*self.w/4/self.h) / np.sinh(np.pi*self.b/4/self.h)
+        k2_p = np.sqrt(1 - k2**2)
+            
+        C1 = 2 * epsilon_0 * ellipk(k1**2)/ellipk(k1_p**2)
+        C2 = 2 * epsilon_0 * (self.epsilon_r - 1) * ellipk(k2**2)/ellipk(k2_p**2)
         
-        return epsilon_eff_1
-    
+        C_l = 2*C1 + C2
+        
+        return C_l
+
     @property
     def Lm_l(self):
         """ 
@@ -106,22 +102,10 @@ class CPW(object):
         Ref: Goople paper, Yosida1995(Schuster thesis): They show the same expressions.
         """
         k0 = self.w / self.b
-        k0_p = sqrt(1 - k0**2)
-        L_l = mu_0 / 4 * ellipk(k0_p)/ellipk(k0)
+        k0_p = np.sqrt(1 - k0**2)
+        L_l = mu_0 / 4 * ellipk(k0_p**2)/ellipk(k0**2)
         
         return L_l
-    
-    @property
-    def C_l(self):
-        """
-        Capacitance per unit length, F/m
-        Ref: Goople paper
-        """
-        k0 = self.w / self.b
-        k0_p = sqrt(1 - k0**2)
-        C_l = 4 * epsilon_0 * self.epsilon_eff * ellipk(k0)/ellipk(k0_p)
-        
-        return C_l
     
     @property
     def Lk_l(self):
@@ -132,73 +116,118 @@ class CPW(object):
         
         k = self.w / self.b
         
-        g = 1 / (2*(k*ellipk(k))**2) * (-np.log(self.t/4/self.w) + 2 * (self.w + self.s) / self.b * np.log(self.s/(self.w + self.s)) \
+        g = 1 / (2*(k*ellipk(k**2))**2) * (-np.log(self.t/4/self.w) + 2 * (self.w + self.s) / self.b * np.log(self.s/(self.w + self.s)) \
                                         - self.w/self.b *np.log(self.t/4/self.b))
         Lk_l = mu_0 * self.lambda_L / (self.w * self.s) * g
         
         return Lk_l
             
     
+#     @property
+#     def Z0(self):
+#         """
+#         Characteristic impedance of CPW.
+#         Ref: Simons book (Schuster thesis)
+#         """
+#         k = self.w / self.b
+#         k3 = np.sqrt(np.pi*self.w/4/self.h) / np.sqrt(np.pi*self.b/4/self.h)
+#         k_p = np.sqrt(1 - k**2)
+#         k3_p = np.sqrt(1 - k3**2)
+        
+#         Z0 = 60 * np.pi / np.sqrt(self.epsilon_eff) / (ellipk(k**2)/ellipk(k_p**2) + ellipk(k3**2)/ellipk(k3_p**2))
+        
+#         return Z0
+
     @property
     def Z0(self):
         """
         Characteristic impedance of CPW.
-        Ref: Simons book (Schuster thesis)
+        Ref: Gupta
         """
         k = self.w / self.b
-        k3 = np.sqrt(pi*self.w/4/self.h) / np.sqrt(pi*self.b/4/self.h)
-        k_p = sqrt(1 - k**2)
-        k3_p = sqrt(1 - k3**2)
-        
-        Z0 = 60 * pi / sqrt(self.epsilon_eff) / (ellipk(k)/ellipk(k_p) + ellipk(k3)/ellipk(k3_p))
-        
+        k_p = np.sqrt(1 - k**2)
+       
+        Z0 = 30 * np.pi/np.sqrt(self.epsilon_eff) * ellipk(k_p**2)/ellipk(k**2)
+       
         return Z0
-        
+    
+    @property
+    def vph(self):
+        """ phase velocity"""
+
+        return c/np.sqrt(self.epsilon_eff)
+
 class QuarterWaveResonator(CPW):
     """
     CPW quart-wave resonator class. This inherits CPW class.
     
     Parameters
     ----------
-    w, a, h, epsilon_s
-    w_r : fundamental resonant freq in rad/s
+    w, a, h, epsilon_sd
+    w_r : undressed(no paracitics) fundamental resonant freq in rad/s       
     kappa : linewidh of resonant peak in rad/s
     
     TODO:
     Calculate frequency shift by coupling cap.
     """
-    def __init__(self, w_r=None, kappa=None, **kwargs):
+    def __init__(self, w_r=None, kappa=None, L_paracitic=0, C_paracitic=0,**kwargs):
         super().__init__(**kwargs)
-        self.w_r = w_r
+        self.w_r = w_r        
         self.kappa = kappa
+        # self._L_paracitic = L_paracitic
+        # self._C_paracitic = C_paracitic
                 
     def __str__(self):
-        out = f'w={self.w} um, s={self.s} um, h={self.h} um, e_r={self.epsilon_r}, f_r={self.w_r/2/pi/1e9 :.3f} GHz, kappa/2pi={self.kappa/2/pi/1e6 :.3f} MHz'
+        out = f'w={self.w} um, s={self.s} um, h={self.h} um, e_r={self.epsilon_r}, f_r={self.w_r/2/np.pi/1e9 :.3f} GHz, kappa/2np.pi={self.kappa/2/np.pi/1e6 :.3f} MHz'
         return out
+
     
     @property
     def resonator_length(self):
         """
-        Calculate the length of resonator in meter. 
-        kinetic_induct : True if kinetic inductance is accounted for.
+        Calculate the length of quarter-wave resonator in meter. 
+        Lambda*freq = vph=c/sqrt(epsilon_eff)
         """
-        if self.kinetic_induct_include:
-            total_induct_per_length = self.Lm_l + self.Lk_l
-        else:
-            total_induct_per_length = self.Lm_l
-        w_r_pulled = self.get_dressed_res_freq()
+        # if self.kinetic_induct_include:
+        #     total_induct_per_length = self.Lm_l + self.Lk_l
+        # else:
+        #     total_induct_per_length = self.Lm_l
+            
+        # w_r_pulled = self.get_dressed_res_freq()
         
-        l = 1/sqrt(total_induct_per_length * self.C_l) / (w_r_pulled/2/pi) / 4
+        l = self.vph / (self.w_r/2/np.pi) / 4
         
         return l
     
-    def get_dressed_res_freq(self):
-        w_r_pulled = self.w_r  # TODO: calculate frequency shift by coupling cap.
-        return w_r_pulled
+    def get_w_r_dressed(self, L_paracitic=0, C_paracitic=0):
+        """ Dressed resonant frequency in rad/s """
+        C_LEA = (np.pi/4/self.Z0)/self.w_r
+        L_LEA = (4*self.Z0/np.pi)/self.w_r
+        
+        C_tot = C_LEA + C_paracitic
+        L_tot = L_LEA + L_paracitic
+        
+        w_r_dressed = 1/np.sqrt(L_tot*C_tot)
+        
+        return w_r_dressed
+    
+    
+    def get_w_r_undressed(self, w_r_dressed, L_paracitic=0, C_paracitic=0):
+        """ Undressed resonant frequency in rad/s"""
+        w_Cp = np.pi/(4*self.Z0*C_paracitic)
+        w_Lp = (4*self.Z0)/(np.pi*L_paracitic)
+        w_LpCp = 1/np.sqrt(self.L_paracitic*C_paracitic)
+        
+        w_r_undressed = 1/2*( 
+                        -(1/w_Cp+1/w_Lp)
+                        + np.sqrt( (1/w_Cp+1/w_Lp)**2 + 4*(1/w_r_dressed**2-1/w_LpCp**2)))
+        w_r_undressed = 1/w_r_undressed
+      
+        return w_r_undressed
     
     @property
     def Qc(self):
-        return self.w_r / self.kappa
+        return self.w_r/ self.kappa
     
     @property
     def Mc(self):
@@ -206,7 +235,7 @@ class QuarterWaveResonator(CPW):
         Mutual inductance between resonator and feedline, given w_r and kappa.
         Ref: Madison Simulation-and-Design
         """
-        M = self.Z0 / self.w_r * sqrt(8/self.Qc/pi)
+        M = self.Z0 / self.w_r * np.sqrt(8/self.Qc/np.pi)
         
         return M 
 
@@ -226,12 +255,14 @@ class Transmon(object):
               q = Transmon.in_GHz(Ej=10, Ec=0.3)  
     """
     
-    def __init__(self, Ej=0, Ec=0, N=10, ng_vec=np.linspace(-3, 3, 200)):
+    def __init__(self, Ej=0, Ec=0, N=10, Cj=0, ng_vec=np.linspace(-3, 3, 200)):
         self.Ej = Ej 
         self.Ec = Ec 
         self.N = N        
         self.ng_vec = ng_vec
-       
+        self.C_g= None # coupling capacitance
+        self.Cj = 0 # junction capacitance
+        
     @classmethod
     def in_GHz(cls, Ej=10, Ec=0.3, **kwargs):
         return cls(Ej=Ej*1e9*h, Ec=Ec*1e9*h, **kwargs)
@@ -263,6 +294,10 @@ class Transmon(object):
         """
         return e**2 / self.Ec /2
     
+    @total_cap.setter
+    def total_cap(self, val):
+        self.Ec  = e**2 / val /2
+        
     @property
     def Ej_to_Ec_ratio(self):
         return self.Ej / self.Ec
@@ -290,17 +325,17 @@ class Transmon(object):
         """
         qubit frequency in Hz. Average of max and min over ng
         """
-        energies = self.energies  # to evaluate energies once
+        energies = self.energies  # to **2evaluate energies once
         f01 = (energies[:,1] - energies[:,0]) / h
         freq_01 = (f01.max() + f01.min()) / 2
 
-        return freq_01 * 2 * pi
+        return freq_01 * 2 * np.pi
     
     @property
     def f01(self):
-        return self.w01 / 2/ pi
+        return self.w01 / 2/ np.pi
    
-    def g01(self, res, C_g):
+    def g01(self, res):
         """
         Calculate the coupling strength.
         Ref: Koch paper
@@ -312,21 +347,25 @@ class Transmon(object):
 
         Ej, Ec = self.Ej, self.Ec
         w_r = res.w_r
-        C_l = res.C_l
-        l = res.resonator_length
-
+                
         matrix_element_01 = np.sqrt(1/2)*(Ej/8/Ec)**(1/4)
-        beta = C_g / self.total_cap
-        #     alpha = e**2 / (4*pi*epsilon_0*hbar*c)
-
-        V0rms = np.sqrt(hbar * w_r / (C_l * l))
+        if self.C_g is not None:
+            beta = self.C_g / self.total_cap
+        else:
+            raise Exception('C_g is not defined')
+        #     alpha = e**2 / (4*np.pi*epsilon_0*hbar*c)
+        
+        l = res.resonator_length
+        Cr = res.C_l * l / 2  # This is true for both half-wave (goppl paper) and quarter-wave resonator (Gao thesis).
+        V0rms = np.sqrt(hbar * w_r / 2 /Cr)
+        
         g_01 = 2 * beta * e * V0rms * matrix_element_01 / hbar
 
         return g_01
     
-    def g01_Madison(self, res, C_g):
+    def g01_Madison(self, res):
         """
-        g = 1/2 * Cg /sqrt(Cg+Cs)/sqrt(Cg+Cr)*sqrt(wr*wq)
+        g = 1/2 * Cg /np.sqrt(Cg+Cs)/np.sqrt(Cg+Cr)*np.sqrt(wr*wq)
         Cg: gate capacitance in F
         Cs: qubit shunt capacitance in F
         Cr: lump-element effective capacitance, Cr = C_l * l /2 , is this only true for half-wave CPW? what is Cr for quarter-wave
@@ -337,21 +376,24 @@ class Transmon(object):
         Note: I think Cg+Cs should be replaced with Cg+Cs+Cj....
         """
         C_r = res.C_l*res.resonator_length/2
-        g_01 = 1/2 * C_g / np.sqrt(self.total_cap) / np.sqrt(C_g + C_r) * np.sqrt(self.w01 * res.w_r)
+        g_01 = 1/2 * self.C_g / np.sqrt(self.total_cap) / np.sqrt(self.C_g + C_r) * np.sqrt(self.w01 * res.w_r)
         
         return g_01
     
-    def Chi01(self, res, C_g):
+    def Chi01(self, res):
         """
         Ref: Koch paper
         res : Resonator object
-        C_g : capacitance between resonator and qubit
+        C_g : capacitance between resonator and qubit in rad/sec
         """
         delta = self.w01 - res.w_r
         anharm = self.anharmonicity
         
-        Chi01 = self.g01(res, C_g)**2 / delta * (anharm/(anharm + delta)) 
-        
+        if self.C_g is not None:
+            Chi01 = self.g01(res)**2 / delta * (anharm/(anharm + delta)) 
+        else:
+            raise Exception('C_g is not defined.')
+            
         return Chi01
     
     def plot_energies(self, ymax=(20, 3)):
@@ -399,6 +441,7 @@ class Transmon(object):
         
         return (self.f01 - args[0])**2 +(self.anharmonicity - args[1])**2
     
+    @property
     def Ic(self):
         """ 
         From Ej, calculate Ic from Ej = hbar*Ic/(2e)
@@ -407,3 +450,10 @@ class Transmon(object):
         """
                 
         return self.Ej/hbar*(2*e)
+    
+    @property
+    def Lj(self):
+        """
+        Josephson inductance .
+        """
+        return (h/2/e/2/np.pi)**2/self.Ej
